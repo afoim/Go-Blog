@@ -233,6 +233,7 @@ const indexTemplate = `
 <!DOCTYPE html>
 <html lang="zh">
 <head>
+    <link rel="icon" type="image/png" href="https://q2.qlogo.cn/headimg_dl?dst_uin=2973517380&spec=5">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>二叉树树的博客</title>
@@ -287,6 +288,7 @@ const postTemplate = `
 <!DOCTYPE html>
 <html lang="zh">
 <head>
+    <link rel="icon" type="image/png" href="https://q2.qlogo.cn/headimg_dl?dst_uin=2973517380&spec=5">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Post.Title}}</title>
