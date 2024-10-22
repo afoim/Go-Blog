@@ -1,4 +1,6 @@
-#### [Pic~Onani~API~](https://pic.onani.cn/)（pic.onani.cn）是一个由二叉树树搭建的二次元随机图网站，网站提供了横屏竖屏图API获取，图源在Cloudflare R2
+#### [Pic~Onani~API~](https://pic.onani.cn/)`pic.onani.cn`
+
+#### 是一个由二叉树树搭建的二次元随机图网站，网站提供了横屏竖屏图API获取，图源在Cloudflare R2
 
 1. 最早，这个网站搭建在一台VPS上，图源在本地服务器，通过PHP来调用。之后，由于带宽和资费问题，逐步迈向新架构
 
@@ -6,7 +8,7 @@
    
    - 这期间，图源从 `.png` 转换为了 `.webp` ，最终大小200M左右，骤降60%
 
-3. 最终，采用Cloudflare R2作为图源（免费10G），连接Cloudflare Workers，得到两个域名（hrandom.onani.cn、vrandom.onani.cn），再通过创建一个Cloudflare Pages完成整个网站
+3. 最终，采用Cloudflare R2作为图源（免费10G），连接Cloudflare Workers，得到两个域名（ `hrandom.onani.cn` 、 `vrandom.onani.cn` ），再通过创建一个Cloudflare Pages完成整个网站
 
 目前，这个随机图网站仅需一个域名即可存活。~~我嘎了网站还活着~~
 
