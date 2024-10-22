@@ -24,8 +24,13 @@ type Post struct {
 
 // PageData 结构体用于存储页面数据
 type PageData struct {
-    Posts    []Post
-    Today    time.Time
+    Posts []Post
+    Today time.Time
+}
+
+// 自定义函数将标题转换为锚点 ID
+func anchorize(title string) string {
+    return strings.ToLower(strings.ReplaceAll(title, " ", "-"))
 }
 
 // 模板字符串
@@ -388,26 +393,34 @@ func loadPosts() ([]Post, error) {
             // 创建 markdown 解析器
             extensions := parser.CommonExtensions | parser.AutoHeadingIDs
             p := parser.NewWithExtensions(extensions)
-            
+
             // 创建 HTML 渲染器
             opts := html.RendererOptions{
                 Flags: html.CommonFlags | html.HrefTargetBlank,
             }
             renderer := html.NewRenderer(opts)
-            
+
             // 转换 Markdown 为 HTML
-            html := markdown.ToHTML(content, p, renderer)
-            
+            htmlContent := markdown.ToHTML(content, p, renderer)
+
             // 使用文件名作为标题（去掉.md后缀）
             title := strings.TrimSuffix(file.Name(), ".md")
-            
+
+            // 将 HTML 内容转换为字符串
+            htmlStr := string(htmlContent)
+
+            // 替换标题以包含 ID
+            for _, heading := range []string{"h1", "h2", "h3", "h4", "h5", "h6"} {
+                htmlStr = strings.ReplaceAll(htmlStr, fmt.Sprintf("<%s>", heading), fmt.Sprintf("<%s id=\"%s\">", heading, anchorize(title)))
+            }
+
             post := Post{
                 Title:    title,
-                Content:  template.HTML(html),
+                Content:  template.HTML(htmlStr),
                 Date:     file.ModTime(),
                 Filename: title,
             }
-            
+
             posts = append(posts, post)
         }
     }
