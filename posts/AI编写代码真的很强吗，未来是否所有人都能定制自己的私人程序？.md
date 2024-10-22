@@ -10,7 +10,7 @@
 
 再往后学习了一些HTML，开始尝试使用AI来做网站。有一说一，AI对于前端的审美还是很不错的，几十个CSS样式灵活运用得比我写纯HTML还丝滑流畅，它现在还存在着：[Find-AcoFork](https://old.onani.cn/)
 
-最后也就是现在，本人的博客（也就是你在看的这个玩意，也是AI做的，基于go的静态页面生成器，详见：[GitHub - afoim/blog_html: 静态html纯静态博客实现](https://github.com/afoim/blog_html)），本人的随机图网站：[Pic~Onani~API~](https://pic.onani.cn/) 前端页面也是AI写的，还有NoneBot2的插件：[afoim/nb2_plugins: 自用NoneBot2的插件](https://github.com/afoim/nb2_plugins)也都是AI写的，可见AI能力不可小觑
+最后也就是现在，本人的博客（也就是你在看的这个玩意，也是AI做的，基于go的静态页面生成器，详见：[GitHub - afoim/blog_html: 静态html纯静态博客实现](https://github.com/afoim/blog_html) ），本人的随机图网站：[Pic~Onani~API~](https://pic.onani.cn/) 前端页面也是AI写的，还有NoneBot2的插件：[afoim/nb2_plugins: 自用NoneBot2的插件](https://github.com/afoim/nb2_plugins)也都是AI写的，可见AI能力不可小觑
 
 ---
 
