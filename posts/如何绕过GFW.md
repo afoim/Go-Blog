@@ -10,17 +10,21 @@
 
 ### 那么，让我们分析一下GFW对于不同网站的封锁情况
 
-我们使用WireShark进行抓包
+百度（[www.baidu.com](https://www.baidu.com)）
 
-- 首先尝试访问 `www.baidu.com` 这是一个没有被GFW封锁的域名
-  
-  1. 我们先ping一下得到ip： `2408:873d:22:18ac:0:ff:b021:1393`
-  
-  2. 通过Hosts强制绑定通过WireShark进行抓包，可以看到，客户端发送的 `Client Hello` 可以清晰地看到 `Server Name` 字段，并且也能正常收到 `Server Hello` 然后双方便开始通信查看浏览器，网站正常访问让我们试试访问 `discord.com`
+1. 我们先ping一下得到ip： `2408:873d:22:18ac:0:ff:b021:1393`
 
-- 1. 我们先ping一下，可以发现，域名和解析到的IP均不通此时我们尝试使用 `itdog.cn` 进行v4 ping，并且依次对解析出的域名进行ping可见，第一个IP通强制绑定Hosts，尝试抓包可见，在通过强制Hosts绑定后，在客户端发送 `Client Hello` 后被GFW检测到`Server Name` 字段，然后GFW向客户端发送一个 `RST` 报文，即要求重置客户端连接。在客户端侧，则会收到 `ERR_CONNECTION_RESET` 即：连接已重置。用户无法访问网页。
-     
-     
+2. 通过Hosts强制绑定通过WireShark进行抓包，可以看到，客户端发送的 `Client Hello` 可以清晰地看到 `Server Name` 字段，并且也能正常收到 `Server Hello` 然后双方便开始通信查看浏览器，网站正常访问让我们试试访问 `discord.com`
+
+DIscord（[discord.com](https://discord.com/)）
+
+1. 我们先ping一下，域名和解析到的IP均不通
+
+2. 此时我们尝试使用 `itdog.cn` 进行v4 ping，并且依次对解析出的域名进行ping
+
+3. 找到通的IP强制绑定Hosts，尝试抓包
+
+4. 在客户端发送 `Client Hello` 后被GFW检测到 `Server Name` 字段，然后GFW向客户端发送一个 `RST` 报文，即要求重置客户端连接。在客户端侧，则会收到 `ERR_CONNECTION_RESET` 即：连接已重置。用户无法访问网页。
 
 ### 继续，尝试发送空 `Server Name` 报文
 
