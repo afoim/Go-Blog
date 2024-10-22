@@ -1,0 +1,266 @@
+<!-- templates.html -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <link rel="icon" type="image/png" href="https://q2.qlogo.cn/headimg_dl?dst_uin=2973517380&spec=5">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Post.Title}}{{.Post.Title}}{{else}}二叉树树的博客{{end}}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <style>
+        /* Common Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+            background-color: #fff;
+        }
+
+        /* Code Block Styles */
+        .code-block-wrapper {
+            position: relative;
+            margin: 1.5rem 0;
+        }
+
+        pre {
+            position: relative;
+            padding: 2rem 1rem 1rem 1rem;
+            background: #282c34;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        pre.expanded {
+            max-height: none;
+        }
+
+        pre::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 12px;
+            height: 12px;
+            background: #ff5f56;
+            border-radius: 50%;
+            box-shadow: 18px 0 0 #ffbd2e, 36px 0 0 #27c93f;
+        }
+
+        pre code {
+            display: block;
+            overflow-x: auto;
+            padding: 0 !important;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+
+        p code, li code {
+            background-color: #f1f1f1;
+            color: #e91e63;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 0.9em;
+        }
+
+        /* Code Block Gradient and Buttons */
+        .code-block-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(transparent, #282c34);
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .code-block-wrapper.expanded::after {
+            opacity: 0;
+        }
+
+        .expand-button {
+            position: absolute;
+            left: 50%;
+            bottom: 10px;
+            transform: translateX(-50%);
+            background: #3a404b;
+            border: none;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 0.8rem;
+            transition: background-color 0.2s;
+        }
+
+        .expand-button:hover {
+            background: #4a5160;
+        }
+
+        .copy-button {
+            position: absolute;
+            right: 10px;
+            top: 8px;
+            background: #3a404b;
+            border: none;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 0.8rem;
+            transition: background-color 0.2s;
+        }
+
+        .copy-button:hover {
+            background: #4a5160;
+        }
+
+        .copy-button.copied {
+            background: #27c93f;
+        }
+
+        /* Post Styles */
+        .post-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .post-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .post-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .post-content {
+            margin-top: 2rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: #666;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 2rem;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeBlocks = document.querySelectorAll('pre code');
+            
+            codeBlocks.forEach((codeBlock, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-block-wrapper';
+                codeBlock.parentElement.parentNode.insertBefore(wrapper, codeBlock.parentElement);
+                wrapper.appendChild(codeBlock.parentElement);
+
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.textContent = '复制';
+                copyButton.onclick = () => copyCode(codeBlock, copyButton);
+                wrapper.appendChild(copyButton);
+
+                if (codeBlock.parentElement.scrollHeight > 400) {
+                    const expandButton = document.createElement('button');
+                    expandButton.className = 'expand-button';
+                    expandButton.textContent = '展开';
+                    expandButton.onclick = () => toggleCode(wrapper, expandButton);
+                    wrapper.appendChild(expandButton);
+                }
+            });
+        });
+
+        function copyCode(codeBlock, button) {
+            const text = codeBlock.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = '已复制';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = '复制';
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                button.textContent = '复制失败';
+                setTimeout(() => {
+                    button.textContent = '复制';
+                }, 2000);
+            });
+        }
+
+        function toggleCode(wrapper, button) {
+            const pre = wrapper.querySelector('pre');
+            const isExpanded = wrapper.classList.contains('expanded');
+            
+            if (isExpanded) {
+                wrapper.classList.remove('expanded');
+                pre.classList.remove('expanded');
+                button.textContent = '展开';
+                wrapper.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                wrapper.classList.add('expanded');
+                pre.classList.add('expanded');
+                button.textContent = '收起';
+            }
+        }
+    </script>
+</head>
+<body>
+    {{if .Post.Title}}
+    <!-- Post Template -->
+    <a href="index.html" class="back-link">← 返回首页</a>
+    <article>
+        <h1>{{.Post.Title}}</h1>
+        <div class="post-date">{{.Post.Date.Format "2006-01-02"}}</div>
+        <div class="post-content">
+            {{.Post.Content}}
+        </div>
+    </article>
+    {{else}}
+    <!-- Index Template -->
+    <h1>二叉树树的博客</h1>
+    <ul class="post-list">
+    {{range .Posts}}
+        <li class="post-item">
+            <h2><a href="{{.Filename}}.html">{{.Title}}</a></h2>
+            <div class="post-date">{{.Date.Format "2006-01-02"}}</div>
+        </li>
+    {{end}}
+    </ul>
+    {{end}}
+
+    <div class="footer">
+        <p>© {{.Today.Format "2006"}} 二叉树树 版权所有</p>
+        <p>采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可证</p>
+    </div>
+</body>
+</html>
