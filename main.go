@@ -15,19 +15,13 @@ import (
     "time"
 )
 
-// ShortLink 结构体用于存储短链接信息
-type ShortLink struct {
-    Code    string // 短链接代码
-    PostID  string // 对应的文章ID
-}
-
 // Post 结构体用于存储博文信息
 type Post struct {
     Title     string
     Content   template.HTML
     Date      time.Time
-    Filename  string
-    ShortLink string // 短链接代码
+    Filename  string    // 用于生成HTML文件的名称（可能是短链接）
+    OriginalFilename string  // 原始md文件名（用于标题显示）
 }
 
 // PageData 结构体用于存储页面数据
@@ -36,9 +30,6 @@ type PageData struct {
     Today time.Time
     Post  Post // 用于单篇文章页面
 }
-
-// 存储所有短链接
-var shortLinks = make(map[string]string)
 
 // 自定义函数将标题转换为锚点 ID
 func anchorize(title string) string {
@@ -62,12 +53,6 @@ func main() {
     err = generatePages(posts)
     if err != nil {
         log.Fatal("生成页面失败:", err)
-    }
-
-    // 生成短链接重定向页面
-    err = generateShortLinkPages()
-    if err != nil {
-        log.Fatal("生成短链接页面失败:", err)
     }
 
     fmt.Println("网站生成完成！文件保存在 dist 目录中")
@@ -120,7 +105,13 @@ func loadPosts() ([]Post, error) {
             htmlContent := markdown.ToHTML([]byte(remainingContent), p, renderer)
 
             // 使用文件名作为标题（去掉.md后缀）
-            title := strings.TrimSuffix(file.Name(), ".md")
+            originalFilename := strings.TrimSuffix(file.Name(), ".md")
+
+            // 确定最终的文件名（使用短链接或原始文件名）
+            filename := originalFilename
+            if shortLinkCode != "" {
+                filename = shortLinkCode
+            }
 
             // 将 HTML 内容转换为字符串
             htmlStr := string(htmlContent)
@@ -129,20 +120,15 @@ func loadPosts() ([]Post, error) {
             for _, heading := range []string{"h1", "h2", "h3", "h4", "h5", "h6"} {
                 htmlStr = strings.ReplaceAll(htmlStr, 
                     fmt.Sprintf("<%s>", heading), 
-                    fmt.Sprintf("<%s id=\"%s\">", heading, anchorize(title)))
+                    fmt.Sprintf("<%s id=\"%s\">", heading, anchorize(originalFilename)))
             }
 
             post := Post{
-                Title:     title,
+                Title:     originalFilename,  // 标题使用原始文件名
                 Content:   template.HTML(htmlStr),
                 Date:      file.ModTime(),
-                Filename:  title,
-                ShortLink: shortLinkCode,
-            }
-
-            // 如果存在短链接，添加到映射中
-            if shortLinkCode != "" {
-                shortLinks[shortLinkCode] = title
+                Filename:  filename,          // 用于生成HTML文件的名称
+                OriginalFilename: originalFilename,  // 保存原始文件名
             }
 
             posts = append(posts, post)
@@ -150,47 +136,6 @@ func loadPosts() ([]Post, error) {
     }
 
     return posts, nil
-}
-
-// 生成短链接重定向页面
-func generateShortLinkPages() error {
-    // 短链接重定向模板
-    redirectTemplate := `<!DOCTYPE html>
-<html>
-<head>
-    <meta http-equiv="refresh" content="0;url=/{{.PostID}}.html">
-</head>
-<body>
-    正在重定向到文章页面...
-</body>
-</html>`
-
-    tmpl, err := template.New("redirect").Parse(redirectTemplate)
-    if err != nil {
-        return err
-    }
-
-    for code, postID := range shortLinks {
-        // 创建短链接目录
-        err := os.MkdirAll(filepath.Join("dist", code), 0755)
-        if err != nil {
-            return err
-        }
-
-        // 创建 index.html 文件
-        file, err := os.Create(filepath.Join("dist", code, "index.html"))
-        if err != nil {
-            return err
-        }
-
-        err = tmpl.Execute(file, struct{ PostID string }{PostID: postID})
-        file.Close()
-        if err != nil {
-            return err
-        }
-    }
-
-    return nil
 }
 
 // 生成所有页面
