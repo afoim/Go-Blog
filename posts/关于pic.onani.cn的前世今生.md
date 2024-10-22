@@ -1,4 +1,4 @@
-#### [Pic~Onani~API~](https://pic.onani.cn/) `pic.onani.cn`
+#### [Pic~Onani~API~](https://pic.onani.cn/)
 
 #### 是一个由二叉树树搭建的二次元随机图网站，网站提供了横屏竖屏图API获取，图源在Cloudflare R2
 
