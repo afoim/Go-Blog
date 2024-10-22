@@ -14,7 +14,7 @@
 
 1. 我们先ping一下得到ip： `2408:873d:22:18ac:0:ff:b021:1393`
 
-2. 通过Hosts强制绑定通过WireShark进行抓包，可以看到，客户端发送的 `Client Hello` 可以清晰地看到 `Server Name` 字段，并且也能正常收到 `Server Hello` 然后双方便开始通信查看浏览器，网站正常访问让我们试试访问 `discord.com`
+2. 通过Hosts强制绑定通过WireShark进行抓包，客户端发送的 `Client Hello` 可以清晰地看到 `Server Name` 字段，并且也能正常收到 `Server Hello` 然后双方便开始通信查看浏览器，网站正常访问让我们试试访问 `discord.com`
 
 DIscord（[discord.com](https://discord.com/)）
 
