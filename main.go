@@ -11,17 +11,18 @@ import (
     "log"
     "os"
     "path/filepath"
+    "sort"
     "strings"
     "time"
 )
 
 // Post 结构体用于存储博文信息
 type Post struct {
-    Title     string
-    Content   template.HTML
-    Date      time.Time
-    Filename  string    // 用于生成HTML文件的名称（可能是短链接）
-    OriginalFilename string  // 原始md文件名（用于标题显示）
+    Title            string
+    Content          template.HTML
+    Date             time.Time
+    Filename         string // 用于生成HTML文件的名称（可能是短链接）
+    OriginalFilename string // 原始md文件名（用于标题显示）
 }
 
 // PageData 结构体用于存储页面数据
@@ -65,8 +66,8 @@ func parseShortLink(content string) (string, string) {
         firstLine := scanner.Text()
         if strings.HasPrefix(firstLine, "!url:") {
             code := strings.TrimSpace(strings.TrimPrefix(firstLine, "!url:"))
-            remainingContent := strings.TrimPrefix(content, firstLine+"\n")
-            return code, remainingContent
+            remainingContent := content[len(firstLine)+1:] // 删除第一行和换行符
+            return code, strings.TrimSpace(remainingContent) // 返回剩余内容，去掉首尾空白
         }
     }
     return "", content
@@ -118,22 +119,27 @@ func loadPosts() ([]Post, error) {
 
             // 替换标题以包含 ID
             for _, heading := range []string{"h1", "h2", "h3", "h4", "h5", "h6"} {
-                htmlStr = strings.ReplaceAll(htmlStr, 
-                    fmt.Sprintf("<%s>", heading), 
+                htmlStr = strings.ReplaceAll(htmlStr,
+                    fmt.Sprintf("<%s>", heading),
                     fmt.Sprintf("<%s id=\"%s\">", heading, anchorize(originalFilename)))
             }
 
             post := Post{
-                Title:     originalFilename,  // 标题使用原始文件名
-                Content:   template.HTML(htmlStr),
-                Date:      file.ModTime(),
-                Filename:  filename,          // 用于生成HTML文件的名称
-                OriginalFilename: originalFilename,  // 保存原始文件名
+                Title:            originalFilename,  // 标题使用原始文件名
+                Content:          template.HTML(htmlStr),
+                Date:             file.ModTime(),
+                Filename:         filename,            // 用于生成HTML文件的名称
+                OriginalFilename: originalFilename,    // 保存原始文件名
             }
 
             posts = append(posts, post)
         }
     }
+
+    // 按照日期降序排序
+    sort.Slice(posts, func(i, j int) bool {
+        return posts[i].Date.After(posts[j].Date)
+    })
 
     return posts, nil
 }

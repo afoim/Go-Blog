@@ -252,7 +252,7 @@
     {{range .Posts}}
         <li class="post-item">
             <h2><a href="{{.Filename}}.html">{{.Title}}</a></h2>
-            <div class="post-date">{{.Date.Format "2006-01-02"}}</div>
+            <div class="post-date">最后更新 {{.Date.Format "2006-01-02"}}</div>
         </li>
     {{end}}
     </ul>
