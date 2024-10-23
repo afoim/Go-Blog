@@ -59,21 +59,38 @@ func main() {
     fmt.Println("网站生成完成！文件保存在 dist 目录中")
 }
 
-// 检查第一行是否包含短链接
-func parseShortLink(content string) (string, string) {
+func parsePostInfo(content string) (string, time.Time, string) {
     scanner := bufio.NewScanner(strings.NewReader(content))
-    if scanner.Scan() {
-        firstLine := scanner.Text()
-        if strings.HasPrefix(firstLine, "!url:") {
-            code := strings.TrimSpace(strings.TrimPrefix(firstLine, "!url:"))
-            remainingContent := content[len(firstLine)+1:] // 删除第一行和换行符
-            return code, strings.TrimSpace(remainingContent) // 返回剩余内容，去掉首尾空白
+    var createDate time.Time
+    shortLink := ""
+    lineCount := 0
+    var remainingContent strings.Builder
+
+    for scanner.Scan() {
+        lineCount++
+        line := scanner.Text()
+        if lineCount == 1 && strings.HasPrefix(line, "!url:") {
+            shortLink = strings.TrimSpace(strings.TrimPrefix(line, "!url:"))
+        } else if lineCount == 2 && strings.HasPrefix(line, "!create:") {
+            dateStr := strings.TrimSpace(strings.TrimPrefix(line, "!create:"))
+            var err error
+            createDate, err = time.Parse("2006-01-02", dateStr)
+            if err != nil {
+                createDate = time.Time{} // 返回零值时间
+            }
+        } else {
+            // 将剩余的内容写入 remainingContent
+            if lineCount > 2 {
+                remainingContent.WriteString(line + "\n")
+            }
         }
     }
-    return "", content
+
+    return shortLink, createDate, remainingContent.String()
 }
 
-// 加载所有博文
+
+// 修改后的 loadPosts 函数
 func loadPosts() ([]Post, error) {
     var posts []Post
 
@@ -89,8 +106,8 @@ func loadPosts() ([]Post, error) {
                 return nil, err
             }
 
-            // 检查并解析短链接
-            shortLinkCode, remainingContent := parseShortLink(string(content))
+            // 检查并解析短链接和创建日期
+            shortLinkCode, createDate, remainingContent := parsePostInfo(string(content))
 
             // 创建 markdown 解析器
             extensions := parser.CommonExtensions | parser.AutoHeadingIDs
@@ -127,7 +144,7 @@ func loadPosts() ([]Post, error) {
             post := Post{
                 Title:            originalFilename,  // 标题使用原始文件名
                 Content:          template.HTML(htmlStr),
-                Date:             file.ModTime(),
+                Date:             createDate,         // 使用解析后的创建日期
                 Filename:         filename,            // 用于生成HTML文件的名称
                 OriginalFilename: originalFilename,    // 保存原始文件名
             }
@@ -144,7 +161,7 @@ func loadPosts() ([]Post, error) {
     return posts, nil
 }
 
-// 生成所有页面
+// 在生成首页时使用最新的日期
 func generatePages(posts []Post) error {
     // 读取模板文件
     tmpl, err := template.ParseFiles("templates.html")
@@ -161,7 +178,7 @@ func generatePages(posts []Post) error {
 
     err = tmpl.Execute(indexFile, PageData{
         Posts: posts,
-        Today: time.Now(),
+        Today: posts[0].Date, // 使用第一篇文章的创建日期
     })
     if err != nil {
         return err
@@ -176,7 +193,7 @@ func generatePages(posts []Post) error {
 
         err = tmpl.Execute(file, PageData{
             Post:  post,
-            Today: time.Now(),
+            Today: post.Date, // 单篇文章页面使用其创建日期
         })
         file.Close()
         if err != nil {
