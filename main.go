@@ -2,6 +2,7 @@ package main
 
 import (
     "bufio"
+    "flag"
     "fmt"
     "github.com/gomarkdown/markdown"
     "github.com/gomarkdown/markdown/html"
@@ -16,28 +17,38 @@ import (
     "time"
 )
 
-// Post 结构体用于存储博文信息
 type Post struct {
     Title            string
     Content          template.HTML
     Date             time.Time
-    Filename         string // 用于生成HTML文件的名称（可能是短链接）
-    OriginalFilename string // 原始md文件名（用于标题显示）
+    Filename         string
+    OriginalFilename string
 }
 
-// PageData 结构体用于存储页面数据
 type PageData struct {
     Posts []Post
     Today time.Time
-    Post  Post // 用于单篇文章页面
+    Post  Post
 }
 
-// 自定义函数将标题转换为锚点 ID
 func anchorize(title string) string {
     return strings.ToLower(strings.ReplaceAll(title, " ", "-"))
 }
 
 func main() {
+    // 命令行参数
+    createPost := flag.String("c", "", "创建新文章，指定md文件名，并且作为文章标题")
+    flag.Parse()
+
+    // 如果提供了创建文章的标题，则执行创建文章操作
+    if *createPost != "" {
+        err := createNewPost(*createPost)
+        if err != nil {
+            log.Fatal("创建新文章失败:", err)
+        }
+        return
+    }
+
     // 创建 dist 目录
     err := os.MkdirAll("dist", 0755)
     if err != nil {
@@ -59,6 +70,27 @@ func main() {
     fmt.Println("网站生成完成！文件保存在 dist 目录中")
 }
 
+func createNewPost(title string) error {
+    // 格式化当前日期
+    dateStr := time.Now().Format("2006-01-02")
+    // 格式化文件名，去掉空格并转换为小写
+    filename := strings.ToLower(strings.ReplaceAll(title, " ", "-")) + ".md"
+
+    // 创建新文章内容，仅包含 !url: 和 !create:
+    content := fmt.Sprintf("!url: \n!create: %s\n", dateStr)
+
+    // 写入文件
+    err := ioutil.WriteFile(filepath.Join("posts", filename), []byte(content), 0644)
+    if err != nil {
+        return err
+    }
+
+    fmt.Printf("新文章已创建: %s\n", filename)
+    return nil
+}
+
+
+
 func parsePostInfo(content string) (string, time.Time, string) {
     scanner := bufio.NewScanner(strings.NewReader(content))
     var createDate time.Time
@@ -76,10 +108,9 @@ func parsePostInfo(content string) (string, time.Time, string) {
             var err error
             createDate, err = time.Parse("2006-01-02", dateStr)
             if err != nil {
-                createDate = time.Time{} // 返回零值时间
+                createDate = time.Time{}
             }
         } else {
-            // 将剩余的内容写入 remainingContent
             if lineCount > 2 {
                 remainingContent.WriteString(line + "\n")
             }
@@ -89,8 +120,6 @@ func parsePostInfo(content string) (string, time.Time, string) {
     return shortLink, createDate, remainingContent.String()
 }
 
-
-// 修改后的 loadPosts 函数
 func loadPosts() ([]Post, error) {
     var posts []Post
 
@@ -106,35 +135,26 @@ func loadPosts() ([]Post, error) {
                 return nil, err
             }
 
-            // 检查并解析短链接和创建日期
             shortLinkCode, createDate, remainingContent := parsePostInfo(string(content))
 
-            // 创建 markdown 解析器
             extensions := parser.CommonExtensions | parser.AutoHeadingIDs
             p := parser.NewWithExtensions(extensions)
 
-            // 创建 HTML 渲染器
             opts := html.RendererOptions{
                 Flags: html.CommonFlags | html.HrefTargetBlank,
             }
             renderer := html.NewRenderer(opts)
 
-            // 转换 Markdown 为 HTML
             htmlContent := markdown.ToHTML([]byte(remainingContent), p, renderer)
 
-            // 使用文件名作为标题（去掉.md后缀）
             originalFilename := strings.TrimSuffix(file.Name(), ".md")
-
-            // 确定最终的文件名（使用短链接或原始文件名）
             filename := originalFilename
             if shortLinkCode != "" {
                 filename = shortLinkCode
             }
 
-            // 将 HTML 内容转换为字符串
             htmlStr := string(htmlContent)
 
-            // 替换标题以包含 ID
             for _, heading := range []string{"h1", "h2", "h3", "h4", "h5", "h6"} {
                 htmlStr = strings.ReplaceAll(htmlStr,
                     fmt.Sprintf("<%s>", heading),
@@ -142,18 +162,17 @@ func loadPosts() ([]Post, error) {
             }
 
             post := Post{
-                Title:            originalFilename,  // 标题使用原始文件名
+                Title:            originalFilename,
                 Content:          template.HTML(htmlStr),
-                Date:             createDate,         // 使用解析后的创建日期
-                Filename:         filename,            // 用于生成HTML文件的名称
-                OriginalFilename: originalFilename,    // 保存原始文件名
+                Date:             createDate,
+                Filename:         filename,
+                OriginalFilename: originalFilename,
             }
 
             posts = append(posts, post)
         }
     }
 
-    // 按照日期降序排序
     sort.Slice(posts, func(i, j int) bool {
         return posts[i].Date.After(posts[j].Date)
     })
@@ -161,15 +180,12 @@ func loadPosts() ([]Post, error) {
     return posts, nil
 }
 
-// 在生成首页时使用最新的日期
 func generatePages(posts []Post) error {
-    // 读取模板文件
     tmpl, err := template.ParseFiles("templates.html")
     if err != nil {
         return err
     }
 
-    // 生成首页
     indexFile, err := os.Create("dist/index.html")
     if err != nil {
         return err
@@ -178,13 +194,12 @@ func generatePages(posts []Post) error {
 
     err = tmpl.Execute(indexFile, PageData{
         Posts: posts,
-        Today: posts[0].Date, // 使用第一篇文章的创建日期
+        Today: posts[0].Date,
     })
     if err != nil {
         return err
     }
 
-    // 生成每篇文章的页面
     for _, post := range posts {
         file, err := os.Create(filepath.Join("dist", post.Filename+".html"))
         if err != nil {
@@ -193,7 +208,7 @@ func generatePages(posts []Post) error {
 
         err = tmpl.Execute(file, PageData{
             Post:  post,
-            Today: post.Date, // 单篇文章页面使用其创建日期
+            Today: post.Date,
         })
         file.Close()
         if err != nil {
