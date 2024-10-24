@@ -4,8 +4,9 @@
     <script defer src="https://cloud.umami.is/script.js" data-website-id="7188e861-cf11-4bec-89d3-28bbe555009c"></script>
     <link rel="icon" type="image/png" href="https://q2.qlogo.cn/headimg_dl?dst_uin=2973517380&spec=5">
     <meta charset="UTF-8">
+    <meta name='description' content='我不知道，这就是个博客，爱看看不看滚蛋。'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{if .Post.Title}}{{.Post.Title}}{{else}}二叉树树的博客{{end}}</title>
+    <title>{{if .Post.Title}}{{.Post.Title}}{{else}}AcoFork Golang Blog | しあわせ{{end}}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
@@ -289,7 +290,7 @@
     </article>
     {{else}}
     <!-- Index Template -->
-    <h1>二叉树树的博客</h1>
+    <h1>AcoFork Golang Blog</h1>
     <ul class="post-list">
     {{range .Posts}}
         <li class="post-item">
@@ -301,7 +302,7 @@
     {{end}}
 
     <div class="footer">
-        <p>© {{.Today.Format "2006"}} 二叉树树 版权所有</p>
+        <p>© {{.Today.Format "2006"}} AcoFork 版权所有 <a href="https://github.com/afoim/blog_html">源码</a></p>
         <p>采用 <a target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可证</p>
     </div>
 </body>
