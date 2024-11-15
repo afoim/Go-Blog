@@ -14,9 +14,9 @@
 2. 由于Github有多个外部资源域名，如 `raw.githubusercontent.com` ，需要挨个使用Workers代理并重写
 
 ### 具体步骤
-登录Cloudflare，点击Workers，新建一个Worker编辑代码如下：
+1. 登录Cloudflare，点击Workers，新建一个Worker编辑代码如下：
 
-然后依次绑定域名，这里以`*.acofork.us.kg`为例
+2. 然后依次绑定域名，这里以`*.acofork.us.kg`为例
 ```javascript
 // 域名映射配置
 const domain_mappings = {
